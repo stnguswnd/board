@@ -1,64 +1,57 @@
 package com.example.board.repository;
 
-import com.example.board.dto.PostDto;
-import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
+import java.util.List;
+import com.example.board.entity.Post;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 @Repository
-@RequiredArgsConstructor
-public class PostRepository {
+public interface PostRepository extends JpaRepository<Post, Long> {
 
-    private final JdbcTemplate jdbcTemplate;
+    // 기본 CRUD 메서드
 
-    // @RequiredArgsConstructor를 통해 자동생성
-//    public PostRepository(JdbcTemplate jdbcTemplate) {
-//        this.jdbcTemplate = jdbcTemplate;
-//    }
+    // 저장 (INSERT or UPDATE)
+    // Post save(Post entity);
 
-    private final RowMapper<PostDto> rowMapper = (rs, rowNum) -> {
-        return new PostDto(
-                rs.getLong("id"),
-                rs.getString("title"),
-                rs.getString("content"),
-                rs.getTimestamp("created_at").toLocalDateTime()
-        );
-    };
+    // 조회
+    // Optional<Post> findById(Long id);
+    // List<Post> findAll();
+    // List<Post> findAll(Sort sort);
 
-    // 전체 조회
-    public List<PostDto> findAll() {
-        String sql = "SELECT * FROM post";
-        return jdbcTemplate.query(sql, rowMapper);
-    }
+    // 삭제
+    // void deleteById(Long id);
+    // void delete(Post entity);
 
-    // 상세조회
-    public PostDto findById(Long id) {
-        String sql = "SELECT * FROM post WHERE id = ?";
+    // 개수 조회
+    // long count();
+    // 존재 여부 확인
+    // boolean existsById(Long id);
 
-        // queryForObject => 단일 행 조회
-        PostDto post = jdbcTemplate.queryForObject(sql, rowMapper, id);
+    // findBy + 필드명 + 조건
 
-        return post;
-    }
+    // LIKE %keyword%
+    List<Post> findByTitleContaining(String keyword);
 
-    public void save(PostDto postDto) {
-        String sql = "INSERT INTO post (title, content) VALUES (?, ?)";
-        jdbcTemplate.update(sql, postDto.getTitle(), postDto.getContent());
-    }
+    // LIKE keyword%
+    List<Post> findByTitleStartingWith(String keyword);
 
-    public void update(Long id, PostDto postDto) {
-        String sql = "UPDATE post SET title = ?, content = ? WHERE id = ?";
-        jdbcTemplate.update(sql, postDto.getTitle(), postDto.getContent(), id);
-    }
+    // >
+    List<Post> findByIdGreaterThan(Long id);
 
-    public void delete(Long id) {
-        String sql = "DELETE FROM post WHERE id = ?";
-        jdbcTemplate.update(sql, id);
-    }
+    // ORDER BY id DESC
+    List<Post> findAllByOrderByIdDesc();
 
-
-
+    // 제목 or 내용 으로 검색
+    List<Post> findByTitleContainingOrContentContaining(
+            String titleKeyword, String contentKeyword);
 }
+
+
+
+
+
+
+
+
+
+
